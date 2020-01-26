@@ -10,7 +10,7 @@
 # Authors: Ramakrishna Vedantam <vrama91@vt.edu> and
 # Tsung-Yi Lin <tl483@cornell.edu>
 
-from cider_scorer import CiderScorer
+from .cider_scorer import CiderScorer
 
 
 class Cider:
@@ -18,6 +18,7 @@ class Cider:
     Main Class to compute the CIDEr metric
 
     """
+
     def __init__(self, n=4, df="corpus"):
         """
         Initialize the CIDEr scoring function

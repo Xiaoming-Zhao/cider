@@ -7,14 +7,16 @@
 #
 # Authors: Ramakrishna Vedantam <vrama91@vt.edu> and Tsung-Yi Lin <tl483@cornell.edu>
 
-from ciderD_scorer import CiderScorer
+from .ciderD_scorer import CiderScorer
 import pdb
+
 
 class CiderD:
     """
     Main Class to compute the CIDEr metric
 
     """
+
     def __init__(self, n=4, sigma=6.0, df="corpus"):
         # set cider to sum over 1 to 4-grams
         self._n = n

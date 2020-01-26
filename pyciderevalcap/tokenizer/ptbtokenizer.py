@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # File Name : ptbtokenizer.py
 #
 # Description : Do the PTB Tokenization and remove punctuations.
@@ -9,7 +9,7 @@
 # Authors : Hao Fang <hfang@uw.edu> and Tsung-Yi Lin <tl483@cornell.edu>
 
 import os
-import pdb # python debugger
+import pdb  # python debugger
 import sys
 import subprocess
 import re
@@ -20,18 +20,20 @@ import itertools
 STANFORD_CORENLP_3_4_1_JAR = 'stanford-corenlp-3.4.1.jar'
 
 # punctuations to be removed from the sentences
-PUNCTUATIONS = ["''", "'", "``", "`", "-LRB-", "-RRB-", "-LCB-", "-RCB-", \
-        ".", "?", "!", ",", ":", "-", "--", "...", ";"] 
+PUNCTUATIONS = ["''", "'", "``", "`", "-LRB-", "-RRB-", "-LCB-", "-RCB-",
+                ".", "?", "!", ",", ":", "-", "--", "...", ";"]
+
 
 class PTBTokenizer:
     """Python wrapper of Stanford PTBTokenizer"""
+
     def __init__(self, _source='gts'):
         self.source = _source
 
     def tokenize(self, captions_for_image):
-        cmd = ['java', '-cp', STANFORD_CORENLP_3_4_1_JAR, \
-                'edu.stanford.nlp.process.PTBTokenizer', \
-                '-preserveLines', '-lowerCase']
+        cmd = ['java', '-cp', STANFORD_CORENLP_3_4_1_JAR,
+               'edu.stanford.nlp.process.PTBTokenizer',
+               '-preserveLines', '-lowerCase']
 
         # ======================================================
         # prepare data for PTB Tokenizer
@@ -45,25 +47,27 @@ class PTBTokenizer:
         elif self.source == 'res':
             index = [i for i, v in enumerate(captions_for_image)]
             image_id = [v["image_id"] for v in captions_for_image]
-            sentences = '\n'.join(v["caption"].replace('\n', ' ') for v in captions_for_image )
+            sentences = '\n'.join(v["caption"].replace('\n', ' ') for v in captions_for_image)
             final_tokenized_captions_for_index = []
 
         # ======================================================
         # save sentences to temporary file
         # ======================================================
-        path_to_jar_dirname=os.path.dirname(os.path.abspath(__file__))
+        path_to_jar_dirname = os.path.dirname(os.path.abspath(__file__))
         tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=path_to_jar_dirname)
-        tmp_file.write(sentences)
+        # NOTE: https://stackoverflow.com/questions/7585435/best-way-to-convert-string-to-bytes-in-python-3
+        tmp_file.write(sentences.encode("utf-8"))
         tmp_file.close()
 
         # ======================================================
         # tokenize sentence
         # ======================================================
         cmd.append(os.path.basename(tmp_file.name))
-        p_tokenizer = subprocess.Popen(cmd, cwd=path_to_jar_dirname, \
-                stdout=subprocess.PIPE)
+        p_tokenizer = subprocess.Popen(cmd, cwd=path_to_jar_dirname,
+                                       stdout=subprocess.PIPE)
         token_lines = p_tokenizer.communicate(input=sentences.rstrip())[0]
-        lines = token_lines.split('\n')
+        # NOTE: https://stackoverflow.com/questions/7585435/best-way-to-convert-string-to-bytes-in-python-3
+        lines = token_lines.decode("utf-8").split('\n')
         # remove temp file
         os.remove(tmp_file.name)
 
@@ -74,16 +78,16 @@ class PTBTokenizer:
             for k, line in zip(image_id, lines):
                 if not k in final_tokenized_captions_for_image:
                     final_tokenized_captions_for_image[k] = []
-                tokenized_caption = ' '.join([w for w in line.rstrip().split(' ') \
-                        if w not in PUNCTUATIONS])
+                tokenized_caption = ' '.join([w for w in line.rstrip().split(' ')
+                                              if w not in PUNCTUATIONS])
                 final_tokenized_captions_for_image[k].append(tokenized_caption)
 
             return final_tokenized_captions_for_image
 
         elif self.source == 'res':
             for k, img, line in zip(index, image_id, lines):
-                tokenized_caption = ' '.join([w for w in line.rstrip().split(' ') \
-                        if w not in PUNCTUATIONS])
+                tokenized_caption = ' '.join([w for w in line.rstrip().split(' ')
+                                              if w not in PUNCTUATIONS])
                 final_tokenized_captions_for_index.append({'image_id': img, 'caption': [tokenized_caption]})
 
             return final_tokenized_captions_for_index
