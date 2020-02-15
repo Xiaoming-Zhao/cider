@@ -12,6 +12,7 @@ from __future__ import print_function
 
 from .ciderD_scorer import CiderDScorer
 import pdb
+import numpy as np
 
 
 class CiderD:
@@ -59,8 +60,9 @@ class CiderD:
             tmp_cider_scorer += (hypo[0], ref)
 
         (score, scores) = tmp_cider_scorer.compute_score(pre_computed_gt_cnts2vec=pre_computed_gt_cnts2vec)
+        ctest_ngram_cnts = [len(_) for _ in tmp_cider_scorer.ctest]
 
-        return score, scores
+        return score, scores, np.mean(ctest_ngram_cnts)
 
     def method(self):
         return "CIDEr-D"

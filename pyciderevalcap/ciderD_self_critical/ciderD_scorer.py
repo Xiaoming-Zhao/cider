@@ -13,6 +13,7 @@ import math
 import six
 from six.moves import cPickle
 import os
+import pickle
 
 
 def precook(s, n=4, out=False):
@@ -164,6 +165,11 @@ class CiderDScorer(object):
         for (ngram, term_freq) in cnts.items():
             # give word count 1 if it doesn't appear in reference corpus
             df = np.log(max(1.0, self.document_frequency[ngram]))
+
+            # NOTE: we must delete the key to avoid memory leak
+            if self.document_frequency[ngram] == 0:
+                del self.document_frequency[ngram]
+
             # ngram index
             n = len(ngram) - 1
             # tf (term_freq) * idf (precomputed idf) for n-grams
