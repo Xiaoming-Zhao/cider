@@ -163,12 +163,18 @@ class CiderDScorer(object):
         length = 0
         norm = [0.0 for _ in range(self.n)]
         for (ngram, term_freq) in cnts.items():
+            # NOTE: avoid memory leak
+            if ngram not in self.document_frequency:
+                tmp_val = 0.0
+            else:
+                tmp_val = self.document_frequency[ngram]
             # give word count 1 if it doesn't appear in reference corpus
-            df = np.log(max(1.0, self.document_frequency[ngram]))
+            # df = np.log(max(1.0, self.document_frequency[ngram]))
+            df = np.log(max(1.0, tmp_val))
 
             # NOTE: we must delete the key to avoid memory leak
-            if self.document_frequency[ngram] == 0:
-                del self.document_frequency[ngram]
+            # if self.document_frequency[ngram] == 0:
+            #     del self.document_frequency[ngram]
 
             # ngram index
             n = len(ngram) - 1
